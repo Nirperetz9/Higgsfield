@@ -3,8 +3,8 @@
 # 35mm-style grain, optional LUT, 24fps. Usage:
 #   ./film_finish.sh input.mp4 output.mp4 [LUT.cube|none] [scope]
 # "scope" as 4th arg adds 2.39:1 letterbox bars (Hollywood widescreen).
-# Default LUT is none, because the keyframes were already graded with the LUT
-# (the video inherits it). Pass LANA_WarmPrint35_60.cube only if a clip drifted.
+# Normal use: run once on the final edit with luts/LANA_WarmPrint35_full.cube.
+# Pass "none" only if the keyframes were already graded before video generation.
 set -euo pipefail
 IN="$1"; OUT="$2"; LUT="${3:-none}"; SCOPE="${4:-}"
 BARS=""

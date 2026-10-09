@@ -3,7 +3,7 @@ Cinematic short, 6 shots, ~34 seconds, 16:9 (optional 2.39:1 letterbox in finish
 
 **Logline:** Late night, alone in her apartment with a laptop and a glass of red wine, Lana confesses to the camera that she's been playing with AI, that it's ridiculously easy to make a "whole person", and ends with a wink that makes you wonder whether she's one of them.
 
-**Film look:** warm 35mm print, in the spirit of the night interiors of *Licorice Pizza* (2021): tungsten practicals, creamy skin, soft highlights with halation, fine grain, olive-green shadows, no digital sharpness. LUT: `LANA_WarmPrint35_full.cube`.
+**Film look:** warm 35mm print, in the spirit of the night interiors of *Licorice Pizza* (2021): tungsten practicals, creamy skin, soft highlights with halation, fine grain, olive-green shadows, no digital sharpness. LUT: `LANA_WarmPrint35_full.cube`, applied once to the final edit.
 
 ---
 
@@ -34,9 +34,10 @@ Film still from a Hollywood feature film. Shot on 35mm film, Kodak Vision3 500T,
 Avoid: plastic or airbrushed skin, beauty filter, over-sharpened details, HDR look, oversaturated colors, glossy CGI look, digital video look, ring light, studio backdrop, text, captions, watermark, logos, extra fingers, distorted hands, different face, changed freckle pattern, nudity.
 ```
 
-**How to send to the image model** (`fal-ai/nano-banana-pro/edit`):
-- `image_urls`: see each frame below (refs listed by file name).
-- `aspect_ratio`: `16:9` · `resolution`: `2K` · `output_format`: `png` · `num_images`: `4` (pick the best face).
+**How to generate in Google Flow** (image generation; pick Nano Banana Pro in the model menu if it is offered):
+- Upload the images listed for each frame below as **ingredients**, in that order (the first one matters most). If Flow limits how many you can add, keep the first ones in the list.
+- Orientation: **landscape 16:9** · outputs: **4** · keep the best face. Download at the highest size Flow offers.
+- Don't grade the frames in Flow: the CAMERA block asks for natural colors on purpose, because the LUT goes on the final video.
 - Prompt order: `[IDENTITY] + [WARDROBE] + [SET] + [FRAME DESCRIPTION] + [CAMERA & FILM LOOK] + [NEGATIVE]`
 
 ---
@@ -114,7 +115,7 @@ Why this model: it is the only H3 endpoint that takes her face references **and*
 
 Settings for every shot:
 - `reference_image_urls`: `[lana_ref_5.jpg, lana_ref_1.jpg, lana_ref_3.jpg]` (same three, same order, every shot)
-- `image_url` = graded start frame (xA) · `end_image_url` = graded end frame (xB)
+- `image_url` = start frame from Flow (xA) · `end_image_url` = end frame from Flow (xB)
 - `resolution`: `1080P` · `aspect_ratio`: `adaptive` (follows the 16:9 keyframes) · `duration`: as listed
 - `prompt_expansion_mode`: `disabled` (keeps the exact wording; switch to `balanced` only if motion feels stiff)
 - Do not fill `reference_conditions` (it can't be combined with `reference_image_urls`) and leave `middle_image_url` empty.
@@ -177,4 +178,4 @@ H3 generates the voice from the prompt, so it can vary between shots. To keep on
 Test on Shot 1 first. If lip-sync is off, keep the native audio and replace only the voice in the edit.
 
 ## 5. Edit order
-1 → 2 → 3 → 4 → 5 → 6 → black. Trim 6–10 frames from the head and tail of each clip (generated clips often ease in/out). Run `tools/film_finish.sh` on each clip (or on the final export) for softness, halation and grain; add `scope` for 2.39:1 bars.
+1 → 2 → 3 → 4 → 5 → 6 → black. Trim 6–10 frames from the head and tail of each clip (generated clips often ease in/out). Apply `LANA_WarmPrint35_full.cube` to the whole timeline (CapCut or DaVinci Resolve), then add light grain and softening. With ffmpeg, one command does LUT + softness + halation + grain on the final export: `tools/film_finish.sh final.mp4 final_film.mp4 luts/LANA_WarmPrint35_full.cube` (add `scope` at the end for 2.39:1 bars).

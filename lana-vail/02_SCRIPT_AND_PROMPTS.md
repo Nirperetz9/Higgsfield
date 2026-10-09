@@ -108,12 +108,22 @@ Same lighting and wardrobe as image 1. Change only: extreme close-up, her eyes a
 
 ---
 
-## 2. Video prompts — `minimax/h3-max-turbo/image-to-video`
+## 2. Video prompts — `minimax/h3-max/reference-to-video` (primary for every shot)
+
+Why this model: it is the only H3 endpoint that takes her face references **and** a start frame **and** an end frame together. (`minimax/h3-max-turbo/reference-to-video` also exists, but it has no start/end frame inputs, so it can't hold your keyframes.)
 
 Settings for every shot:
+- `reference_image_urls`: `[lana_ref_5.jpg, lana_ref_1.jpg, lana_ref_3.jpg]` (same three, same order, every shot)
 - `image_url` = graded start frame (xA) · `end_image_url` = graded end frame (xB)
-- `resolution`: `1080P` · `duration`: as listed · `prompt_expansion_mode`: `disabled` (keeps the exact wording; switch to `balanced` only if motion feels stiff)
+- `resolution`: `1080P` · `aspect_ratio`: `adaptive` (follows the 16:9 keyframes) · `duration`: as listed
+- `prompt_expansion_mode`: `disabled` (keeps the exact wording; switch to `balanced` only if motion feels stiff)
+- Do not fill `reference_conditions` (it can't be combined with `reference_image_urls`) and leave `middle_image_url` empty.
 - Once a take is good, write down its `seed`.
+
+Add this **prefix** to every video prompt:
+```
+Image 1, Image 2 and Image 3 show the exact face and identity of the woman. She must look identical to them in every frame: same face shape, green eyes, nose, lips, brows, freckle pattern and strawberry-blonde hair. The video starts on the provided first frame and ends on the provided last frame.
+```
 
 Add this **suffix** to every video prompt:
 ```
@@ -153,18 +163,18 @@ Slow push-in from close-up to extreme close-up as she leans toward the lens. [0-
 
 ---
 
-## 3. If a shot's face drifts — fallback model
-Re-run that shot in **`minimax/h3-max/reference-to-video`** with:
-- `reference_image_urls`: `[lana_ref_5, lana_ref_1, lana_ref_3]`
-- `image_url` = xA, `end_image_url` = xB, `resolution`: `1080P`, `aspect_ratio`: `adaptive`
-- Prefix the video prompt with: `Image 1, Image 2 and Image 3 show the woman's exact face and identity. Keep her identical to them throughout.`
+## 3. If a shot's face still drifts
+- Re-run with a new seed first.
+- Make sure the face is large in both xA and xB, and that xB was generated from xA (so the two frames match).
+- Shorten the shot to 5 seconds.
+- Last resort: `minimax/h3-max-turbo/image-to-video` with the same xA/xB (faster, but no face references).
 
 ## 4. Voice consistency (optional)
 H3 generates the voice from the prompt, so it can vary between shots. To keep one voice:
 1. Generate all six lines with one voice in `fal-ai/elevenlabs/tts/eleven-v3`.
 2. Cut each line into its own file (at least 2 seconds; pad with silence).
-3. Pass it as `target_audio_url` on that shot.
-Test on Shot 1 first: the fal docs say this replaces the soundtrack, but don't state that the lips follow it. If they don't, keep the native audio and replace only the voice in the edit, or use the fallback model with `reference_audio_urls` (voice cloning).
+3. Pass that line as `reference_audio_urls: [line.mp3]` and add to the prompt: `Her voice matches Audio 1 exactly.` (references, images and audio together, max 12 files).
+Test on Shot 1 first. If lip-sync is off, keep the native audio and replace only the voice in the edit.
 
 ## 5. Edit order
 1 → 2 → 3 → 4 → 5 → 6 → black. Trim 6–10 frames from the head and tail of each clip (generated clips often ease in/out). Run `tools/film_finish.sh` on each clip (or on the final export) for softness, halation and grain; add `scope` for 2.39:1 bars.
